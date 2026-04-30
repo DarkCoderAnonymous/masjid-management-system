@@ -9,23 +9,28 @@ connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  /^http:\/\/localhost(:\d+)?$/,
+  /^https:\/\/masjid-management-system(-[a-z0-9]+)?\.vercel\.app$/,
+];
+
 app.use(cors({
   origin: function (origin, callback) {
     if (!origin) return callback(null, true);
-
-    if (
-      origin.includes("localhost") ||
-      origin.includes("https://masjid-management-system-seven.vercel.app/login")
-    ) {
-      return callback(null, true);
-    }
-
-    return callback(null, false);
+    const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+    return callback(null, allowed);
   },
-  credentials: true
+  credentials: true,
 }));
 
-app.options("*", cors());
+app.options("*", cors({
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+    return callback(null, allowed);
+  },
+  credentials: true,
+}));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
