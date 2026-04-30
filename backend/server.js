@@ -11,7 +11,7 @@ const app = express();
 // Middleware
 const allowedOrigins = [
   /^http:\/\/localhost(:\d+)?$/,
-  /^https:\/\/masjid-management-system(-[a-z0-9]+)?\.vercel\.app$/,
+  /^https:\/\/masjid-management-system[a-z0-9-]*\.vercel\.app$/,
 ];
 
 app.use(cors({
@@ -57,9 +57,13 @@ app.use((err, req, res, next) => {
   res.status(500).json({ success: false, message: 'Internal Server Error' });
 });
 
+module.exports = app;
+
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`\n🕌 Masjid Management Backend`);
-  console.log(`✅ Server running on http://localhost:${PORT}`);
-  console.log(`📋 Environment: ${process.env.NODE_ENV || 'development'}\n`);
-});
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`\n🕌 Masjid Management Backend`);
+    console.log(`✅ Server running on http://localhost:${PORT}`);
+    console.log(`📋 Environment: ${process.env.NODE_ENV || 'development'}\n`);
+  });
+}
