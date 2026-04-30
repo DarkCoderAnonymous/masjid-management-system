@@ -4,7 +4,6 @@ const dotenv = require('dotenv');
 const connectDB = require('./config/db');
 
 dotenv.config();
-connectDB();
 
 const app = express();
 
@@ -41,10 +40,16 @@ console.log("allowed 1", allowed);
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
 
-// Request logger
-app.use((req, res, next) => {
+// Request logger + DB connection per request (serverless-safe)
+app.use(async (req, res, next) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} — origin: ${req.headers.origin || 'none'}`);
-  next();
+  try {
+    await connectDB();
+    next();
+  } catch (error) {
+    console.error('DB connection failed:', error.message);
+    res.status(500).json({ success: false, message: 'Database connection failed' });
+  }
 });
 
 // Routes
