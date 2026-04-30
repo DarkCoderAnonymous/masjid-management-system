@@ -4,6 +4,8 @@ import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useAuth } from '@/contexts/AuthContext';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
+const afzaalImg = '/afzaal.jpg';
 
 interface LoginForm {
   email: string;
@@ -93,10 +95,13 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 p-3 bg-primary-50 rounded-lg border border-primary-100">
-            <p className="text-xs text-primary-700 font-medium">Default Super Admin Credentials:</p>
+          <div className="mt-6 p-3 bg-primary-50 rounded-lg border border-primary-100 flex items-center justify-between">
+            {/* <p className="text-xs text-primary-700 font-medium">Default Super Admin Credentials:</p>
             <p className="text-xs text-primary-600 mt-0.5">Email: superadmin@masjid.com</p>
-            <p className="text-xs text-primary-600">Password: Admin@123</p>
+            <p className="text-xs text-primary-600">Password: Admin@123</p> */}
+
+            <p className="text-xs text-primary-600">Developed by m Afzaal</p>
+            &nbsp;<Image src={afzaalImg} alt="Afzaal" width={50} height={50} style={{borderRadius: '50px'}} />
           </div>
         </div>
       </div>
