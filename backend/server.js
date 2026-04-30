@@ -10,14 +10,22 @@ const app = express();
 
 // Middleware
 app.use(cors({
-  origin: [
-    "http://localhost:3000",
-    "http://localhost:3001",
-    "http://localhost:4200",
-    "https://masjid-management-system-seven.vercel.app"
-  ],
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (
+      origin.includes("localhost") ||
+      origin.includes("vercel.app")
+    ) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
   credentials: true
 }));
+
+app.options("*", cors());
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
