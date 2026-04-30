@@ -13,29 +13,25 @@ const allowedOrigins = [
   /^https:\/\/masjid-management-system[a-z0-9-]*\.vercel\.app$/,
 ];
 
-app.use(cors({
+// Also allow explicitly configured FRONTEND_URL from env
+const frontendUrl = process.env.FRONTEND_URL;
+
+function isAllowedOrigin(origin) {
+  if (!origin) return true;
+  if (frontendUrl && origin === frontendUrl) return true;
+  return allowedOrigins.some((pattern) => pattern.test(origin));
+}
+
+const corsOptions = {
   origin: function (origin, callback) {
-console.log("origin", origin);
-    if (!origin) return callback(null, true);
-    const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
-console.log("allowed", allowed);
-    return callback(null, allowed);
+    console.log('CORS origin:', origin, '| allowed:', isAllowedOrigin(origin));
+    callback(null, isAllowedOrigin(origin));
   },
   credentials: true,
-}));
+};
 
-app.options("*", cors({
-  origin: function (origin, callback) {
-console.log("origin 1", origin);
-
-    if (!origin) return callback(null, true);
-    const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
-console.log("allowed 1", allowed);
-
-    return callback(null, allowed);
-  },
-  credentials: true,
-}));
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
