@@ -18,7 +18,7 @@ const SUPER_ADMIN = {
 async function seed() {
   try {
     await mongoose.connect(
-      process.env.MONGODB_URI || 'mongodb://localhost:27017/masjid-management'
+      "mongodb+srv://Afzaal:Afzaal123@cluster0.ea0uaof.mongodb.net/masjidDB?retryWrites=true&w=majority"
     );
     console.log('✅ Connected to MongoDB');
 
