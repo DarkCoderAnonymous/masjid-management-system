@@ -16,8 +16,10 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
+console.log("origin", origin);
     if (!origin) return callback(null, true);
     const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+console.log("allowed", allowed);
     return callback(null, allowed);
   },
   credentials: true,
@@ -25,8 +27,12 @@ app.use(cors({
 
 app.options("*", cors({
   origin: function (origin, callback) {
+console.log("origin 1", origin);
+
     if (!origin) return callback(null, true);
     const allowed = allowedOrigins.some((pattern) => pattern.test(origin));
+console.log("allowed 1", allowed);
+
     return callback(null, allowed);
   },
   credentials: true,
@@ -34,6 +40,12 @@ app.options("*", cors({
 
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true }));
+
+// Request logger
+app.use((req, res, next) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.originalUrl} — origin: ${req.headers.origin || 'none'}`);
+  next();
+});
 
 // Routes
 app.use('/api/auth', require('./routes/auth'));
