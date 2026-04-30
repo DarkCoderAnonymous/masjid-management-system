@@ -18,10 +18,11 @@ const allowedOrigins = [
 
 app.use(cors({
   origin: function (origin, callback) {
-    // allow server-to-server or mobile apps
     if (!origin) return callback(null, true);
 
-    if (allowedOrigins.includes(origin)) {
+    const isAllowed = allowedOrigins.some(o => o === origin);
+
+    if (isAllowed) {
       return callback(null, true);
     }
 
