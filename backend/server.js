@@ -9,8 +9,25 @@ connectDB();
 const app = express();
 
 // Middleware
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:4200",
+  "https://masjid-management-system-seven.vercel.app/"
+];
+
 app.use(cors({
-  origin: "*",
+  origin: function (origin, callback) {
+    // allow server-to-server or mobile apps
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+
+    console.log("Blocked by CORS:", origin);
+    return callback(new Error("Not allowed by CORS"));
+  },
   credentials: true
 }));
 
