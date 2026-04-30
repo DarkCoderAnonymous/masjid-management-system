@@ -15,7 +15,7 @@ app.use(cors({
 
     if (
       origin.includes("localhost") ||
-      origin.includes("vercel.app")
+      origin.includes("https://masjid-management-system-seven.vercel.app/login")
     ) {
       return callback(null, true);
     }
