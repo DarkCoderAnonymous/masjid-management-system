@@ -1,34 +1,30 @@
 const mongoose = require('mongoose');
 
-let cached = global._mongooseConnection;
-
 const connectDB = async () => {
-  if (cached && cached.conn) {
-    return cached.conn;
+  // Always read from global so the cached value is shared across warm invocations
+  if (global._mongooseConn && mongoose.connection.readyState === 1) {
+    return global._mongooseConn;
   }
 
-  if (!cached) {
-    cached = global._mongooseConnection = { conn: null, promise: null };
+  if (!process.env.MONGO_URI) {
+    throw new Error('MONGO_URI environment variable is not set');
   }
 
-  if (!cached.promise) {
-    cached.promise = mongoose
-      .connect(process.env.MONGO_URI)
-      .then((mongoose) => mongoose)
+  if (!global._mongoosePromise) {
+    global._mongoosePromise = mongoose
+      .connect(process.env.MONGO_URI, {
+        serverSelectionTimeoutMS: 10000,
+        socketTimeoutMS: 45000,
+      })
       .catch((error) => {
-        cached.promise = null;
+        global._mongoosePromise = null;
         throw error;
       });
   }
 
-  try {
-    cached.conn = await cached.promise;
-    console.log(`✅ MongoDB Connected: ${cached.conn.connection.host}`);
-    return cached.conn;
-  } catch (error) {
-    console.error(`❌ MongoDB connection error: ${error.message}`);
-    throw error;
-  }
+  global._mongooseConn = await global._mongoosePromise;
+  console.log(`✅ MongoDB Connected: ${mongoose.connection.host}`);
+  return global._mongooseConn;
 };
 
 module.exports = connectDB;
