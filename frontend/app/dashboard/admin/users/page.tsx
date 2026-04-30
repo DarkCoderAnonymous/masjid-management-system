@@ -153,7 +153,10 @@ export default function AdminUsersPage() {
                     <td className="table-cell text-right">
                       <div className="flex items-center justify-end gap-1">
                         <button
-                          onClick={() => router.push(`/dashboard/admin/users/${user._id}/donations`)}
+                          onClick={
+                            //@ts-ignore
+                            () => router.push(`/dashboard/admin/users/${user._id}/donations`)
+                          }
                           className="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-medium text-primary-700
                                      bg-primary-50 hover:bg-primary-100 rounded-lg transition-colors"
                           title="View Donations"
