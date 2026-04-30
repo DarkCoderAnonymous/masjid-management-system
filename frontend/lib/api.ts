@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   // baseURL: 'https://masjid-management-system-6cld-n05ixymps.vercel.app/api',
-  baseURL: 'https://masjid-management-system-6cld.vercel.app//api',
+  baseURL: 'https://masjid-management-system-6cld.vercel.app/api',
   headers: { 'Content-Type': 'application/json' },
   timeout: 15000,
 });
