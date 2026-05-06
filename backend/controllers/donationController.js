@@ -198,4 +198,37 @@ const downloadPDF = async (req, res) => {
   }
 };
 
-module.exports = { getDonations, addDonation, updateDonation, deleteDonation, downloadPDF };
+// @desc    Get monthly donation stats (current month, all users)
+// @route   GET /api/donations/stats/monthly
+// @access  Admin, Super Admin
+const getMonthlyDonationStats = async (req, res) => {
+  try {
+    const now = new Date();
+    const monthFilter = {
+      date: {
+        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
+        $lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
+      },
+    };
+
+    const result = await Donation.aggregate([
+      { $match: monthFilter },
+      { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } },
+    ]);
+
+    res.json({
+      success: true,
+      data: {
+        total: result[0]?.total || 0,
+        count: result[0]?.count || 0,
+        month: now.toLocaleString('default', { month: 'long' }),
+        year: now.getFullYear(),
+      },
+    });
+  } catch (error) {
+    console.error('getMonthlyDonationStats error:', error);
+    res.status(500).json({ success: false, message: 'Failed to fetch monthly donation stats.' });
+  }
+};
+
+module.exports = { getDonations, addDonation, updateDonation, deleteDonation, downloadPDF, getMonthlyDonationStats };

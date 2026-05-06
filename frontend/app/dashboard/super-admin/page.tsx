@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { PlusIcon, PencilIcon, TrashIcon, MagnifyingGlassIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
-import { User, Pagination } from '@/types';
+import { User, Pagination, MonthlyStats } from '@/types';
 import Modal from '@/components/Modal';
 import AdminForm from '@/components/AdminForm';
 
@@ -16,6 +16,9 @@ export default function SuperAdminPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingAdmin, setEditingAdmin] = useState<User | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [donationStats, setDonationStats] = useState<MonthlyStats | null>(null);
+  const [expenseStats, setExpenseStats] = useState<MonthlyStats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
 
   const fetchAdmins = useCallback(async (page = 1, q = search) => {
     setLoading(true);
@@ -33,6 +36,13 @@ export default function SuperAdminPage() {
   }, [search]);
 
   useEffect(() => { fetchAdmins(); }, []);
+
+  useEffect(() => {
+    Promise.all([
+      api.get('/donations/stats/monthly').then((res) => setDonationStats(res.data.data)).catch(() => setDonationStats(null)),
+      api.get('/expenses/stats/monthly').then((res) => setExpenseStats(res.data.data)).catch(() => setExpenseStats(null)),
+    ]).finally(() => setStatsLoading(false));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -89,6 +99,46 @@ export default function SuperAdminPage() {
         <div className="card text-center">
           <p className="text-3xl font-bold text-primary-700">{pagination.total}</p>
           <p className="text-sm text-gray-500 mt-1">Total Admins</p>
+        </div>
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl">💰</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-500 truncate">
+              Donations — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </p>
+            {statsLoading ? (
+              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
+            ) : (
+              <>
+                <p className="text-xl font-bold text-green-700">
+                  {donationStats ? new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(donationStats.total) : '—'}
+                </p>
+                <p className="text-xs text-gray-400">{donationStats?.count ?? 0} records</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="card flex items-center gap-4">
+          <div className="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl">💸</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-500 truncate">
+              Expenses — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </p>
+            {statsLoading ? (
+              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
+            ) : (
+              <>
+                <p className="text-xl font-bold text-red-700">
+                  {expenseStats ? new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(expenseStats.total) : '—'}
+                </p>
+                <p className="text-xs text-gray-400">{expenseStats?.count ?? 0} records</p>
+              </>
+            )}
+          </div>
         </div>
       </div>
 

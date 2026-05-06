@@ -53,6 +53,7 @@ app.use('/api/auth', require('./routes/auth'));
 app.use('/api/admins', require('./routes/admins'));
 app.use('/api/users', require('./routes/users'));
 app.use('/api/donations', require('./routes/donations'));
+app.use('/api/expenses', require('./routes/expenses'));
 
 // Health check
 app.get('/api/health', (req, res) => {

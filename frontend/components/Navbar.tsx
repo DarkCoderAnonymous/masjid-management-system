@@ -9,6 +9,7 @@ import {
   HomeIcon,
   ShieldCheckIcon,
   UserGroupIcon,
+  BanknotesIcon,
 } from '@heroicons/react/24/outline';
 
 interface NavItem {
@@ -20,8 +21,10 @@ interface NavItem {
 
 const navItems: NavItem[] = [
   { href: '/dashboard/super-admin', label: 'Admin Management', icon: ShieldCheckIcon, roles: ['super_admin'] },
+  { href: '/dashboard/expenses', label: 'Expenses', icon: BanknotesIcon, roles: ['super_admin'] },
   { href: '/dashboard/admin', label: 'Dashboard', icon: HomeIcon, roles: ['admin'] },
   { href: '/dashboard/admin/users', label: 'Members', icon: UserGroupIcon, roles: ['admin'] },
+  { href: '/dashboard/expenses', label: 'Expenses', icon: BanknotesIcon, roles: ['admin'] },
   { href: '/dashboard/user', label: 'Dashboard', icon: HomeIcon, roles: ['user'] },
 ];
 
