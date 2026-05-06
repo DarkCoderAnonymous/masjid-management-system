@@ -8,11 +8,13 @@ const {
   updateExpense,
   deleteExpense,
   getMonthlyStats,
+  downloadExpensePDF,
 } = require('../controllers/expenseController');
 
 const adminOnly = [protect, authorize('admin', 'super_admin')];
 
 router.get('/stats/monthly', ...adminOnly, getMonthlyStats);
+router.get('/pdf', ...adminOnly, downloadExpensePDF);
 router.get('/', ...adminOnly, getExpenses);
 router.post('/', ...adminOnly, addExpense);
 router.put('/:id', ...adminOnly, updateExpense);

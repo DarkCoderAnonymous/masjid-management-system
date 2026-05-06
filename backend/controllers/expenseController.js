@@ -1,4 +1,5 @@
 const Expense = require('../models/Expense');
+const { generateExpensePDF } = require('../utils/pdfGenerator');
 
 /**
  * Build a MongoDB date filter based on filter keyword
@@ -196,4 +197,34 @@ const getMonthlyStats = async (req, res) => {
   }
 };
 
-module.exports = { getExpenses, addExpense, updateExpense, deleteExpense, getMonthlyStats };
+// @desc    Download expense report as PDF
+// @route   GET /api/expenses/pdf
+// @access  Admin, Super Admin
+const downloadExpensePDF = async (req, res) => {
+  try {
+    const { filter } = req.query;
+    const dateFilter = buildDateFilter(filter);
+
+    const [expenses, aggregateResult] = await Promise.all([
+      Expense.find(dateFilter).populate('recordedBy', 'name').sort({ date: -1 }),
+      Expense.aggregate([
+        { $match: dateFilter },
+        { $group: { _id: null, total: { $sum: '$amount' } } },
+      ]),
+    ]);
+
+    const totalAmount = aggregateResult[0]?.total || 0;
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename="expense-report.pdf"');
+
+    await generateExpensePDF(res, expenses, totalAmount, filter || 'all');
+  } catch (error) {
+    console.error('downloadExpensePDF error:', error);
+    if (!res.headersSent) {
+      res.status(500).json({ success: false, message: 'Failed to generate PDF.' });
+    }
+  }
+};
+
+module.exports = { getExpenses, addExpense, updateExpense, deleteExpense, getMonthlyStats, downloadExpensePDF };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { PlusIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
+import { PlusIcon, PencilIcon, TrashIcon, ArrowDownTrayIcon } from '@heroicons/react/24/outline';
 import toast from 'react-hot-toast';
 import api from '@/lib/api';
 import { Expense, ExpenseFilter, EXPENSE_FILTER_OPTIONS, Pagination } from '@/types';
@@ -17,6 +17,30 @@ export default function ExpensesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingExpense, setEditingExpense] = useState<Expense | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Expense | null>(null);
+  const [downloading, setDownloading] = useState(false);
+
+  const handleDownloadPDF = async () => {
+    setDownloading(true);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+      const params = new URLSearchParams();
+      if (filter !== 'all') params.append('filter', filter);
+      const url = `${process.env.NEXT_PUBLIC_API_URL || 'https://masjid-management-system-6cld.vercel.app/api'}/expenses/pdf?${params}`;
+      const res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
+      if (!res.ok) throw new Error('Failed to generate PDF');
+      const blob = await res.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      const label = EXPENSE_FILTER_OPTIONS.find(o => o.value === filter)?.label ?? 'all';
+      link.download = `expense-report-${label.replace(/\s+/g, '-').toLowerCase()}.pdf`;
+      link.click();
+      URL.revokeObjectURL(link.href);
+    } catch {
+      toast.error('Failed to download PDF.');
+    } finally {
+      setDownloading(false);
+    }
+  };
 
   const fetchExpenses = useCallback(async (page = 1, currentFilter = filter) => {
     setLoading(true);
@@ -84,10 +108,20 @@ export default function ExpensesPage() {
           <h1 className="text-2xl font-bold text-gray-900">Expenses</h1>
           <p className="text-sm text-gray-500 mt-0.5">Track and manage masjid expenses</p>
         </div>
-        <button onClick={openCreate} className="btn-primary flex items-center gap-2 self-start sm:self-auto">
-          <PlusIcon className="w-4 h-4" />
-          Add Expense
-        </button>
+        <div className="flex gap-2 self-start sm:self-auto">
+          <button
+            onClick={handleDownloadPDF}
+            disabled={downloading || loading}
+            className="btn-secondary flex items-center gap-2"
+          >
+            <ArrowDownTrayIcon className="w-4 h-4" />
+            {downloading ? 'Generating...' : 'Download PDF'}
+          </button>
+          <button onClick={openCreate} className="btn-primary flex items-center gap-2">
+            <PlusIcon className="w-4 h-4" />
+            Add Expense
+          </button>
+        </div>
       </div>
 
       {/* Filter + Summary */}
