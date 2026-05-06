@@ -119,7 +119,7 @@ export default function SuperAdminPage() {
           <select
             value={selectedMonth}
             onChange={(e) => setSelectedMonth(Number(e.target.value))}
-            className="input py-1.5 text-sm"
+            className="input-field py-1.5 text-sm"
           >
             {MONTHS.map((m, i) => (
               <option key={m} value={i + 1}>{m}</option>
@@ -128,7 +128,7 @@ export default function SuperAdminPage() {
           <select
             value={selectedYear}
             onChange={(e) => setSelectedYear(Number(e.target.value))}
-            className="input py-1.5 text-sm w-24"
+            className="input-field py-1.5 text-sm w-24"
           >
             {buildYears().map((y) => (
               <option key={y} value={y}>{y}</option>

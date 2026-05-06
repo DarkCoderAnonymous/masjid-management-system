@@ -61,7 +61,7 @@ export default function ExpenseForm({ onSave, onCancel, initialData }: ExpenseFo
         </label>
         <input
           type="text"
-          className={`input w-full ${errors.name ? 'border-red-400' : ''}`}
+          className={`input-field ${errors.name ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
           placeholder="e.g. Electricity Bill"
           value={name}
           onChange={(e) => { setName(e.target.value); setErrors((p) => ({ ...p, name: '' })); }}
@@ -78,7 +78,7 @@ export default function ExpenseForm({ onSave, onCancel, initialData }: ExpenseFo
           type="number"
           step="0.01"
           min="0.01"
-          className={`input w-full ${errors.amount ? 'border-red-400' : ''}`}
+          className={`input-field ${errors.amount ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
           placeholder="0.00"
           value={amount}
           onChange={(e) => { setAmount(e.target.value); setErrors((p) => ({ ...p, amount: '' })); }}
@@ -93,7 +93,7 @@ export default function ExpenseForm({ onSave, onCancel, initialData }: ExpenseFo
         </label>
         <input
           type="date"
-          className={`input w-full ${errors.date ? 'border-red-400' : ''}`}
+          className={`input-field ${errors.date ? 'border-red-400 focus:border-red-400 focus:ring-red-400' : ''}`}
           value={date}
           onChange={(e) => { setDate(e.target.value); setErrors((p) => ({ ...p, date: '' })); }}
         />
@@ -107,7 +107,7 @@ export default function ExpenseForm({ onSave, onCancel, initialData }: ExpenseFo
         </label>
         <textarea
           rows={3}
-          className="input w-full resize-none"
+          className="input-field resize-none"
           placeholder="Additional details about this expense..."
           value={description}
           onChange={(e) => setDescription(e.target.value)}
