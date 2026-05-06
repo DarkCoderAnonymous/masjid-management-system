@@ -32,7 +32,7 @@ export default function AdminDashboardPage() {
         <p className="text-sm text-gray-500 mt-0.5">Admin Dashboard</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
         {/* Total Members Card */}
         <div className="card flex items-center gap-4">
           <div className="w-14 h-14 bg-primary-100 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -81,6 +81,33 @@ export default function AdminDashboardPage() {
                 <p className="text-xs text-gray-400">{expenseStats?.count ?? 0} records</p>
               </>
             )}
+          </div>
+        </div>
+
+        {/* In Hand Card */}
+        <div className={`card flex items-center gap-4 ${
+          !loading && donationStats !== null && expenseStats !== null
+            ? (donationStats.total - expenseStats.total) >= 0 ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-red-500'
+            : ''
+        }`}>
+          <div className="w-14 h-14 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-2xl">🏦</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-sm text-gray-500 truncate">In Hand — {currentMonthLabel}</p>
+            {loading ? (
+              <div className="h-8 w-24 bg-gray-200 rounded animate-pulse mt-1" />
+            ) : (() => {
+              const inHand = (donationStats?.total ?? 0) - (expenseStats?.total ?? 0);
+              return (
+                <>
+                  <p className={`text-2xl font-bold ${inHand >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                    {formatCurrency(inHand)}
+                  </p>
+                  <p className="text-xs text-gray-400">Donations − Expenses</p>
+                </>
+              );
+            })()}
           </div>
         </div>
 

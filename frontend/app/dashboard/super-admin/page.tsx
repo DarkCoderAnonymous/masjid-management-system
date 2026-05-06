@@ -95,7 +95,7 @@ export default function SuperAdminPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
         <div className="card text-center">
           <p className="text-3xl font-bold text-primary-700">{pagination.total}</p>
           <p className="text-sm text-gray-500 mt-1">Total Admins</p>
@@ -138,6 +138,33 @@ export default function SuperAdminPage() {
                 <p className="text-xs text-gray-400">{expenseStats?.count ?? 0} records</p>
               </>
             )}
+          </div>
+        </div>
+        <div className={`card flex items-center gap-4 ${
+          !statsLoading && donationStats !== null && expenseStats !== null
+            ? (donationStats.total - expenseStats.total) >= 0 ? 'border-l-4 border-l-emerald-500' : 'border-l-4 border-l-red-500'
+            : ''
+        }`}>
+          <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <span className="text-xl">🏦</span>
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs text-gray-500 truncate">
+              In Hand — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+            </p>
+            {statsLoading ? (
+              <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
+            ) : (() => {
+              const inHand = (donationStats?.total ?? 0) - (expenseStats?.total ?? 0);
+              return (
+                <>
+                  <p className={`text-xl font-bold ${inHand >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
+                    {new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(inHand)}
+                  </p>
+                  <p className="text-xs text-gray-400">Donations − Expenses</p>
+                </>
+              );
+            })()}
           </div>
         </div>
       </div>
