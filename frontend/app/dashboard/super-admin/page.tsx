@@ -8,6 +8,17 @@ import { User, Pagination, MonthlyStats } from '@/types';
 import Modal from '@/components/Modal';
 import AdminForm from '@/components/AdminForm';
 
+const MONTHS = [
+  'January','February','March','April','May','June',
+  'July','August','September','October','November','December',
+];
+function buildYears() {
+  const current = new Date().getFullYear();
+  const years: number[] = [];
+  for (let y = current; y >= current - 5; y--) years.push(y);
+  return years;
+}
+
 export default function SuperAdminPage() {
   const [admins, setAdmins] = useState<User[]>([]);
   const [pagination, setPagination] = useState<Pagination>({ page: 1, limit: 10, total: 0, pages: 1 });
@@ -18,7 +29,10 @@ export default function SuperAdminPage() {
   const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
   const [donationStats, setDonationStats] = useState<MonthlyStats | null>(null);
   const [expenseStats, setExpenseStats] = useState<MonthlyStats | null>(null);
-  const [statsLoading, setStatsLoading] = useState(true);
+  const [statsLoading, setStatsLoading] = useState(false);
+  const now = new Date();
+  const [selectedMonth, setSelectedMonth] = useState(now.getMonth() + 1);
+  const [selectedYear, setSelectedYear] = useState(now.getFullYear());
 
   const fetchAdmins = useCallback(async (page = 1, q = search) => {
     setLoading(true);
@@ -37,12 +51,18 @@ export default function SuperAdminPage() {
 
   useEffect(() => { fetchAdmins(); }, []);
 
-  useEffect(() => {
-    Promise.all([
-      api.get('/donations/stats/monthly').then((res) => setDonationStats(res.data.data)).catch(() => setDonationStats(null)),
-      api.get('/expenses/stats/monthly').then((res) => setExpenseStats(res.data.data)).catch(() => setExpenseStats(null)),
-    ]).finally(() => setStatsLoading(false));
+  const fetchStats = useCallback(async (month: number, year: number) => {
+    setStatsLoading(true);
+    await Promise.all([
+      api.get(`/donations/stats/monthly?month=${month}&year=${year}`)
+        .then((res) => setDonationStats(res.data.data)).catch(() => setDonationStats(null)),
+      api.get(`/expenses/stats/monthly?month=${month}&year=${year}`)
+        .then((res) => setExpenseStats(res.data.data)).catch(() => setExpenseStats(null)),
+    ]);
+    setStatsLoading(false);
   }, []);
+
+  useEffect(() => { fetchStats(selectedMonth, selectedYear); }, [selectedMonth, selectedYear]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -81,6 +101,11 @@ export default function SuperAdminPage() {
     }
   };
 
+  const formatCurrency = (amount: number) =>
+    new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(amount);
+
+  const selectedLabel = `${MONTHS[selectedMonth - 1]} ${selectedYear}`;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -89,9 +114,30 @@ export default function SuperAdminPage() {
           <h1 className="text-2xl font-bold text-gray-900">Admin Management</h1>
           <p className="text-sm text-gray-500 mt-0.5">Manage system administrators</p>
         </div>
-        <button onClick={openCreate} className="btn-primary">
-          <PlusIcon className="w-4 h-4" /> Add Admin
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Month / Year Picker */}
+          <select
+            value={selectedMonth}
+            onChange={(e) => setSelectedMonth(Number(e.target.value))}
+            className="input py-1.5 text-sm"
+          >
+            {MONTHS.map((m, i) => (
+              <option key={m} value={i + 1}>{m}</option>
+            ))}
+          </select>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="input py-1.5 text-sm w-24"
+          >
+            {buildYears().map((y) => (
+              <option key={y} value={y}>{y}</option>
+            ))}
+          </select>
+          <button onClick={openCreate} className="btn-primary whitespace-nowrap">
+            <PlusIcon className="w-4 h-4" /> Add Admin
+          </button>
+        </div>
       </div>
 
       {/* Stats */}
@@ -106,14 +152,14 @@ export default function SuperAdminPage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">
-              Donations — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              Donations — {selectedLabel}
             </p>
             {statsLoading ? (
               <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
             ) : (
               <>
                 <p className="text-xl font-bold text-green-700">
-                  {donationStats ? new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(donationStats.total) : '—'}
+                  {donationStats ? formatCurrency(donationStats.total) : '—'}
                 </p>
                 <p className="text-xs text-gray-400">{donationStats?.count ?? 0} records</p>
               </>
@@ -126,14 +172,14 @@ export default function SuperAdminPage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">
-              Expenses — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              Expenses — {selectedLabel}
             </p>
             {statsLoading ? (
               <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
             ) : (
               <>
                 <p className="text-xl font-bold text-red-700">
-                  {expenseStats ? new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(expenseStats.total) : '—'}
+                  {expenseStats ? formatCurrency(expenseStats.total) : '—'}
                 </p>
                 <p className="text-xs text-gray-400">{expenseStats?.count ?? 0} records</p>
               </>
@@ -150,7 +196,7 @@ export default function SuperAdminPage() {
           </div>
           <div className="min-w-0">
             <p className="text-xs text-gray-500 truncate">
-              In Hand — {new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}
+              In Hand — {selectedLabel}
             </p>
             {statsLoading ? (
               <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mt-1" />
@@ -159,7 +205,7 @@ export default function SuperAdminPage() {
               return (
                 <>
                   <p className={`text-xl font-bold ${inHand >= 0 ? 'text-emerald-700' : 'text-red-700'}`}>
-                    {new Intl.NumberFormat('en-PK', { style: 'currency', currency: 'PKR', maximumFractionDigits: 0 }).format(inHand)}
+                    {formatCurrency(inHand)}
                   </p>
                   <p className="text-xs text-gray-400">Donations − Expenses</p>
                 </>

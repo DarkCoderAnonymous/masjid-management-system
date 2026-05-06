@@ -198,16 +198,19 @@ const downloadPDF = async (req, res) => {
   }
 };
 
-// @desc    Get monthly donation stats (current month, all users)
-// @route   GET /api/donations/stats/monthly
+// @desc    Get donation stats for a specific month/year
+// @route   GET /api/donations/stats/monthly?month=5&year=2026
 // @access  Admin, Super Admin
 const getMonthlyDonationStats = async (req, res) => {
   try {
     const now = new Date();
+    const month = parseInt(req.query.month ?? now.getMonth() + 1) - 1; // 0-based
+    const year  = parseInt(req.query.year  ?? now.getFullYear());
+
     const monthFilter = {
       date: {
-        $gte: new Date(now.getFullYear(), now.getMonth(), 1),
-        $lte: new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59),
+        $gte: new Date(year, month, 1),
+        $lte: new Date(year, month + 1, 0, 23, 59, 59),
       },
     };
 
@@ -216,13 +219,14 @@ const getMonthlyDonationStats = async (req, res) => {
       { $group: { _id: null, total: { $sum: '$amount' }, count: { $sum: 1 } } },
     ]);
 
+    const d = new Date(year, month, 1);
     res.json({
       success: true,
       data: {
         total: result[0]?.total || 0,
         count: result[0]?.count || 0,
-        month: now.toLocaleString('default', { month: 'long' }),
-        year: now.getFullYear(),
+        month: d.toLocaleString('default', { month: 'long' }),
+        year,
       },
     });
   } catch (error) {
